@@ -47,13 +47,17 @@ cities = [[60, 200], [180, 200], [80, 180], [140, 180], [20, 60], [100, 160], [2
 
 # 15 numeros que representam 15 ordens de caminhos diferentes
 tour = random.sample(range(15),15);
+
+# Teste de distancia inicial para comparacao com GA
+# tour = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+
 best = tour
 
 # set initial temp
 temp = 10000
 
 # Cooling rate
-coolingRate = 0.0003;
+coolingRate = 0.003;
 
 print("Initial solution distance")
 print(str(calculateEnergy(best, cities)))
@@ -92,6 +96,9 @@ print("Final solution distance")
 print(str(calculateEnergy(best, cities)))
 print("Tempo de algoritmo")
 print(ending_time - start_time)
+print("Melhor rota final")
+for i in range(0, len(best)):
+	print("(" + str(cities[best[i]][0]) + "|" + str(cities[best[i]][1]) + ") ")
 
 plt.plot([cities[best[i % 15]][0] for i in range(16)], [cities[best[i % 15]][1] for i in range(16)], 'xb-');
 plt.show()
