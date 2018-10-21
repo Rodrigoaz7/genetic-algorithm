@@ -1,38 +1,45 @@
-import numpy as np, random, time, operator, pandas as pd, matplotlib.pyplot as plt
+import numpy as np, random, time, operator, pandas as pd
 
 # Gene
-class City:
-	def __init__(self, x, y):
-		self.x = x
-		self.y = y
+class Ponto:
+	# Ligacoes eh um array de arrays de tamanho 2, onde o primeiro elemento do array
+	# eh o numero do ponto em que ele esta se ligando, e o segundo eh
+	# a distancia entre os dois, por exemplo.
+	# para o ponto 1: [[2,2], [3,9], [4,3], [5,6]]
+	def __init__(self, numero, ligacoes):
+		self.numero = numero
+		self.ligacoes = ligacoes
 	
-	def distance(self, city):
-		xDis = abs(self.x - city.x)
-		yDis = abs(self.y - city.y)
-		distance = np.sqrt((xDis ** 2) + (yDis ** 2))
-		return distance
-	
-	def __repr__(self):
-		return "(" + str(self.x) + "," + str(self.y) + ")"
+	def distance(self, ponto):
+		distance = 0
+		for i in self.ligacoes:
+			if(ponto.numero == i[0]):
+				distance = i[1]
+				break
 
+		return distance
+
+	def __repr__(self):
+		return "(" + str(self.numero) + ")"
 
 class Fitness:
+	# route eh um array de caminho, representado por os pontos (objetos)
 	def __init__(self, route):
 		self.route = route
 		self.distance = 0
 		self.fitness= 0.0
 	
 	def routeDistance(self):
-		if self.distance ==0:
+		if self.distance == 0:
 			pathDistance = 0
 			for i in range(0, len(self.route)):
-				fromCity = self.route[i]
-				toCity = None
+				fromPoint = self.route[i]
+				toPoint = None
 				if i + 1 < len(self.route):
-					toCity = self.route[i + 1]
+					toPoint = self.route[i + 1]
 				else:
-					toCity = self.route[0]
-				pathDistance += fromCity.distance(toCity)
+					toPoint = self.route[0]
+				pathDistance += fromPoint.distance(toPoint)
 			self.distance = pathDistance
 		return self.distance
 	
@@ -44,17 +51,17 @@ class Fitness:
 
 # ===================== Declaracao de funcoes ==================
 
-# Cria rota aleatoria entre as cidades
-def createRoute(cityList):
-	route = random.sample(cityList, len(cityList))
+# Cria rota aleatoria entre os pontos
+def createRoute(pontoList):
+	route = random.sample(pontoList, len(pontoList))
 	return route
 
-# gera populacao inicial
-def initialPopulation(popSize, cityList):
+# gera geracao
+def initialPopulation(popSize, pontoList):
 	population = []
 
 	for i in range(0, popSize):
-		population.append(createRoute(cityList))
+		population.append(createRoute(pontoList))
 	return population
 
 # Retorna a distancia total entre a populacao de cidades
@@ -81,9 +88,10 @@ def selection(popRanked, eliteSize):
 				break
 	return selectionResults
 
-# selecao de pais para proxima geracao de filhos
+# selecao de pais com tamanho o eliteSize para proxima geracao de filhos
 def matingPool(population, selectionResults):
 	matingpool = []
+
 	for i in range(0, len(selectionResults)):
 		index = selectionResults[i]
 		matingpool.append(population[index])
@@ -129,11 +137,11 @@ def mutate(individual, mutationRate):
 		if(random.random() < mutationRate):
 			swapWith = int(random.random() * len(individual))
 			
-			city1 = individual[swapped]
-			city2 = individual[swapWith]
+			point1 = individual[swapped]
+			point2 = individual[swapWith]
 			
-			individual[swapped] = city2
-			individual[swapWith] = city1
+			individual[swapped] = point2
+			individual[swapWith] = point1
 	return individual
 
 
@@ -165,71 +173,35 @@ def nextGeneration(currentGen, eliteSize, mutationRate):
 
 def geneticAlgorithm(population, popSize, eliteSize, mutationRate, generations):
 	pop = initialPopulation(popSize, population)
-	print("Initial distance: " + str(1 / rankRoutes(pop)[0][1]))
-	
+	indexRandom = random.randint(0, len(pop))
+
+	# Primeira rota gerada aleatoriamente
+	print("Initial distance: " + str( 1 / Fitness(pop[indexRandom]).routeFitness()))
+	print("Rota inicial")
+	print(pop[indexRandom])
+
 	for i in range(0, generations):
 		pop = nextGeneration(pop, eliteSize, mutationRate)
-	
+
 	print("Final distance: " + str(1 / rankRoutes(pop)[0][1]))
 	bestRouteIndex = rankRoutes(pop)[0][0]
 	bestRoute = pop[bestRouteIndex]
 	return bestRoute
 
-
-def geneticAlgorithmPlot(population, popSize, eliteSize, mutationRate, generations):
-	pop = initialPopulation(popSize, population)
-	progress = []
-	progress.append(1 / rankRoutes(pop)[0][1])
-	
-	for i in range(0, generations):
-		pop = nextGeneration(pop, eliteSize, mutationRate)
-		progress.append(1 / rankRoutes(pop)[0][1])
-	
-	plt.plot(progress)
-	plt.ylabel('Distance')
-	plt.xlabel('Generation')
-	plt.show()
-
-
-def tuple2array(tuple):
-	array = []
-	for i in range(0, len(tuple)):
-		subarray = []
-		subarray.append(tuple[i].x)
-		subarray.append(tuple[i].y)
-		array.append(subarray)
-	return array
 # ===================== FIM DAS FUNCOES ===============================
 
-# iniciando tempo de codigo
-start_time = time.time()
+pontos = [
+	Ponto(numero=1, ligacoes=[[2,2], [3,9], [4,3], [5,6]]),
+	Ponto(numero=2, ligacoes=[[1,2], [3,4], [4,3], [5,8]]),
+	Ponto(numero=3, ligacoes=[[1,9], [2,4], [4,7], [5,3]]),
+	Ponto(numero=4, ligacoes=[[1,3], [2,3], [3,7], [5,3]]),
+	Ponto(numero=5, ligacoes=[[1,6], [2,8], [3,3], [4,3]])
+]
 
-cities = []
-# for i in range(0,15):
-# 	cities.append(City(x=int(random.random() * 200), y=int(random.random() * 200)))
+# PARA LEMBRAR: MENOR DISTANCIA EH 15
+best = geneticAlgorithm(population=pontos, popSize=50, eliteSize=10, mutationRate=0.01, generations=50)
 
-cities = [City(x=60, y=200), City(x=180, y=200), City(x=80, y=180), City(x=140, y=180),
-City(x=20, y=60), City(x=100, y=160), City(x=200, y=160), City(x=140, y=140),City(x=40, y=120), 
-City(x=100, y=120), City(x=180, y=100), City(x=60, y=80), City(x=120, y=80), City(x=180, y=60), 
-City(x=20, y=40)]
-
-# Teste de distancia inicial igual a rota [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
-# print(Fitness(cities).routeDistance())
-
-best = geneticAlgorithm(population=cities, popSize=100, eliteSize=20, mutationRate=0.01, generations=100)
-
-# finalizando tempo de codigo
-ending_time = time.time()
-
-best2array = tuple2array(best)
-
-print("Tempo de algoritmo")
-print(ending_time - start_time)
 print("Melhor rota final")
-for i in range(0, len(best2array)):
-	print(best[i])
+print(best)
 
-plt.plot(
-	[best2array[i % 15][0] for i in range(16)], 
-	[best2array[i % 15][1] for i in range(16)], 'xb-');
-plt.show()
+

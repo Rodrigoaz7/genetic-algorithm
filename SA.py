@@ -6,11 +6,9 @@ import matplotlib.pyplot as plt
 
 #Calculate the acceptance probability
 def acceptanceProbability(energy, newEnergy, temperature):
-    # If the new solution is better, accept it
     if (newEnergy < energy):
         return 1.0
     
-    #If the new solution is worse, calculate an acceptance probability
     return math.exp((energy - newEnergy) / temperature)
 
 def calculateEnergy(tour, cities):
@@ -32,7 +30,7 @@ def calculateEnergy(tour, cities):
 		distanciaX = abs(PosAtualX - PosProxX)
 		distanciaY = abs(PosAtualY - PosProxY)
 
-		energy = energy + math.sqrt((distanciaX*distanciaX) + (distanciaY*distanciaY))
+		energy = energy + math.sqrt((distanciaX**2) + (distanciaY**2))
 
 	return energy
 # ========================  Fim das funcoes
